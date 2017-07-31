@@ -5,6 +5,7 @@ if exists('g:autoloaded_dispatch')
 endif
 
 let g:autoloaded_dispatch = 1
+let g:open_on_error = 1
 
 " Utility {{{1
 
@@ -897,7 +898,15 @@ function! s:cwindow(request, all, copen)
   call s:cgetfile(a:request, a:all)
   let height = get(g:, 'dispatch_quickfix_height', 10)
   let was_qf = s:is_quickfix()
-  execute 'botright' (a:copen ? 'copen' : 'cwindow') height
+
+  " Parse the error file for errors
+  execute 'cgetfile ' . a:request.file | execute 'crewind'
+  if g:open_on_error == 1
+	execute 'botright' 'cwindow' height
+  else
+	execute 'botright' (a:copen ? 'copen' : 'cwindow') height
+  endif
+
   if !was_qf && s:is_quickfix() && a:copen !=# -2
     wincmd p
   endif
